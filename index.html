@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Offense Management</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body {
+    background-color: #f4f4f9;
+}
+.list-container {
+    background: #2a6fa3;
+    border-radius: 25px;
+    padding: 20px;
+}
+.student-avatar {
+    width: 50px;
+    height: 50px;
+    background: #17a2b8;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    font-weight: bold;
+}
+.add-btn{
+    position:fixed;
+    bottom:30px;
+    right:30px;
+    width:65px;
+    height:65px;
+    font-size:28px;
+}
+.card {
+    border-radius: 15px;
+}
+.card-body a {
+    text-decoration: none;
+}
+@media (max-width: 576px) {
+    .card-body {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+</style>
+</head>
+<body>
+
+<div class="container mt-4">
+    <h4 class="mb-4 text-center">STUDENT OFFENSE MANAGEMENT</h4>
+
+    <!-- ALERT MESSAGE -->
+    <div id="alertContainer"></div>
+
+    <!-- STUDENT LIST -->
+    <div class="list-container" id="studentList"></div>
+</div>
+
+<!-- FLOATING ADD BUTTON -->
+<button class="btn btn-primary rounded-circle shadow add-btn"
+        data-bs-toggle="modal"
+        data-bs-target="#addModal">+</button>
+
+<!-- ADD OFFENSE MODAL -->
+<div class="modal fade" id="addModal">
+<div class="modal-dialog">
+<div class="modal-content">
+<form id="addForm">
+<div class="modal-header">
+<h5>Add Student Record</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+<div class="mb-3">
+<label>Student ID</label>
+<input type="text" id="student_id" class="form-control" required>
+</div>
+
+<div class="mb-3">
+<label>Student Name</label>
+<input type="text" id="student_name" class="form-control" required>
+</div>
+
+<div class="mb-3">
+<label>Course</label>
+<select id="course" class="form-select" required>
+<option value="">Select Course</option>
+<option value="BSIS">BS - Information System</option>
+<option value="BSME">BS - Maritime Education</option>
+<option value="BSPSYCH">BS - Psychology</option>
+<option value="BSCRIM">BS - Criminology</option>
+<option value="BSTM">BS - Tourism and Management</option>
+<option value="BED">Basic Education</option>
+</select>
+</div>
+
+<div class="mb-3">
+<label>Type of Offense</label>
+<select id="offense_type" class="form-select" required>
+<option>Minor</option>
+<option>Major</option>
+</select>
+</div>
+
+<div class="mb-3">
+<label>Description</label>
+<textarea id="description" class="form-control" rows="4" required></textarea>
+</div>
+</div>
+
+<div class="modal-footer">
+<button type="submit" class="btn btn-success">Save</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+
+<!-- DETAILS MODAL -->
+<div class="modal fade" id="detailsModal">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+<h5 id="detailsModalTitle">Student Offenses</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body" id="detailsModalBody">
+</div>
+<div class="modal-footer">
+<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</div>
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Preloaded student data
+let students = [
+    {
+        student_id: "20231001",
+        student_name: "Alice Johnson",
+        course: "BSIS",
+        offenses: [
+            {type: "Minor", description: "Late submission of report"}
+        ]
+    },
+    {
+        student_id: "20231002",
+        student_name: "Brian Smith",
+        course: "BSTM",
+        offenses: [
+            {type: "Minor", description: "Missed class"},
+            {type: "Major", description: "Disrespect to staff"}
+        ]
+    },
+    {
+        student_id: "20231003",
+        student_name: "Clara Lee",
+        course: "BSCRIM",
+        offenses: [
+            {type: "Major", description: "Cheating"},
+            {type: "Minor", description: "Uniform violation"},
+            {type: "Major", description: "Disruptive behavior"}
+        ]
+    }
+];
+
+// Function to render student list
+function renderStudents() {
+    const list = document.getElementById('studentList');
+    list.innerHTML = '';
+    students.forEach(student => {
+        const total = student.offenses.length;
+        let badge = '';
+        if(total === 1) badge = '<span class="badge bg-success">FIRST OFFENSE</span>';
+        else if(total === 2) badge = '<span class="badge bg-warning text-dark">WARNING</span>';
+        else if(total >= 3) badge = '<span class="badge bg-danger">CRITICAL</span>';
+
+        const firstLetter = student.student_name.charAt(0).toUpperCase();
+
+        const card = document.createElement('div');
+        card.className = 'card mb-3 shadow-sm';
+        card.innerHTML = `
+        <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
+            <div class="d-flex align-items-center gap-3">
+                <div class="student-avatar">${firstLetter}</div>
+                <div>
+                    <strong>${student.student_name}</strong><br>
+                    ID: ${student.student_id}<br>
+                    Course: ${student.course}<br>
+                    ${badge}<br>
+                    <small>${total} Total Offense(s)</small>
+                </div>
+            </div>
+            <a href="#" class="text-muted" onclick="viewDetails('${student.student_id}')">Click to see details</a>
+        </div>
+        `;
+        list.appendChild(card);
+    });
+}
+
+// Function to show alert
+function showAlert(message, type='warning') {
+    const alertContainer = document.getElementById('alertContainer');
+    alertContainer.innerHTML = `
+    <div class="alert alert-${type} alert-dismissible fade show">
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    `;
+}
+
+// Handle adding new offense
+document.getElementById('addForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const id = document.getElementById('student_id').value.trim();
+    const name = document.getElementById('student_name').value.trim();
+    const course = document.getElementById('course').value;
+    const type = document.getElementById('offense_type').value;
+    const description = document.getElementById('description').value.trim();
+
+    if(!id || !name || !course || !type || !description) return;
+
+    // Check if student exists
+    let student = students.find(s => s.student_id === id);
+    if(!student) {
+        student = {student_id: id, student_name: name, course: course, offenses: []};
+        students.push(student);
+    }
+
+    const prevCount = student.offenses.length;
+    student.offenses.push({type, description});
+
+    // Set alert message
+    if(prevCount === 0) showAlert("✅ Recorded as FIRST OFFENSE.", "success");
+    else if(prevCount === 1) showAlert("⚠ Warning! This student is now at WARNING level.", "warning");
+    else showAlert("❌ CRITICAL! Student already has multiple offenses.", "danger");
+
+    renderStudents();
+    document.getElementById('addForm').reset();
+    const modalEl = document.getElementById('addModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    modal.hide();
+});
+
+// View details in modal
+function viewDetails(student_id) {
+    const student = students.find(s => s.student_id === student_id);
+    if(!student) return;
+    const modalTitle = document.getElementById('detailsModalTitle');
+    const modalBody = document.getElementById('detailsModalBody');
+
+    modalTitle.textContent = `Offenses for ${student.student_name}`;
+    if(student.offenses.length === 0){
+        modalBody.innerHTML = '<p>No offenses recorded.</p>';
+    } else {
+        let html = '<ul class="list-group">';
+        student.offenses.forEach((off, i) => {
+            html += `<li class="list-group-item"><strong>${i+1}. [${off.type}]</strong> ${off.description}</li>`;
+        });
+        html += '</ul>';
+        modalBody.innerHTML = html;
+    }
+    const modalEl = document.getElementById('detailsModal');
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+}
+
+// Initial render
+renderStudents();
+</script>
+</body>
+</html>
